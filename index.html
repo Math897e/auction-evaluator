@@ -4,63 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Auction Evaluator</title>
-  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    body { font-family: Arial; margin: 40px; background: #f8f8f8; }
+    .box { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
+    input { width: 100%; padding: 10px; font-size: 1rem; }
+    button { padding: 10px 15px; margin-top: 10px; font-size: 1rem; cursor: pointer; }
+    #result { margin-top: 20px; padding: 15px; background: #eee; border-radius: 6px; }
+  </style>
 </head>
 
 <body>
-  <header class="header">
-    <div class="logo">
-      <h1>Auction Evaluator</h1>
-      <p class="subtitle">Estimate and analyze auction lots</p>
-    </div>
-  </header>
+  <div class="box">
+    <h1>Auction Evaluator</h1>
+    <p>Indsæt et link til en auktion:</p>
 
-  <main class="lot-container">
-    <div class="image-section">
-      <img src="assets/sample.jpg" alt="Lot image" class="lot-image" />
-    </div>
+    <input id="lotUrl" placeholder="https://example.com/lot123" />
+    <button onclick="analyze()">Analyser</button>
 
-    <div class="info-section">
-      <h2 class="lot-title">Sample Lot Title</h2>
+    <div id="result"></div>
+  </div>
 
-      <div class="estimate-box">
-        <span class="label">Estimate:</span>
-        <span class="estimate-value">€200 – €300</span>
-      </div>
+  <script>
+    function analyze() {
+      const url = document.getElementById("lotUrl").value.trim();
+      const result = document.getElementById("result");
 
-      <p class="description">
-        This is a placeholder description. Replace this text with your model's
-        extracted data for the auction lot. This layout mimics the visual
-        structure of Interencheres auction pages with clean, readable formatting.
-      </p>
+      if (!url) {
+        result.innerHTML = "Indsæt et link først.";
+        return;
+      }
 
-      <button class="evaluate-btn">Run Value Model</button>
-    </div>
-  </main>
-
-  <section class="similar-section">
-    <h3>Similar Lots</h3>
-
-    <div class="similar-grid">
-      <div class="similar-card">
-        <img src="assets/sample.jpg" alt="Similar lot" />
-        <p>Similar lot title</p>
-      </div>
-
-      <div class="similar-card">
-        <img src="assets/sample.jpg" alt="Similar lot" />
-        <p>Another similar lot</p>
-      </div>
-
-      <div class="similar-card">
-        <img src="assets/sample.jpg" alt="Similar lot" />
-        <p>Example similar object</p>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <p>© 2026 Auction Evaluator — GitHub Pages build</p>
-  </footer>
+      // SIMPLE VERSION: ingen fetch, ingen scraping
+      result.innerHTML = `
+        <h3>Analyseret link:</h3>
+        <p><a href="${url}" target="_blank">${url}</a></p>
+        <p>(Her kan du senere tilføje scraping, modeller, osv.)</p>
+      `;
+    }
+  </script>
 </body>
 </html>
