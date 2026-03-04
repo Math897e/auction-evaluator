@@ -1,48 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Auction Deal Evaluator</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 700px;
-    margin: 40px auto;
-    line-height: 1.6;
-  }
-  input, button {
-    padding: 10px;
-    font-size: 16px;
-    width: 100%;
-    margin-top: 10px;
-  }
-  #result {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 6px;
-  }
-  .good { background: #d7ffd7; border: 2px solid #3a9e3a;}
-  .bad  { background: #ffd7d7; border: 2px solid #c03a3a;}
-</style>
-</head>
-<body>
-
-<h1>Auction Deal Evaluator</h1>
-<p>Indsæt et Auctionet lot-link:</p>
-
-<input id="lotUrl" type="text" placeholder="https://auctionet.com/...">
-<button onclick="analyze()">Beregn</button>
-
-<div id="result"></div>
-
 <script>
+// Ny og stabil CORS-proxy
 const proxy = "https://corsproxy.io/?";
 
 // Hent HTML via proxy
 async function fetchHtml(url) {
     const res = await fetch(proxy + encodeURIComponent(url));
-    const data = await res.json();
-    return data.contents;
+    return await res.text(); // HTML direkte
 }
 
 // Hent Vitus guld/sølv-priser
@@ -125,6 +88,3 @@ async function analyze() {
     }
 }
 </script>
-
-</body>
-</html>
