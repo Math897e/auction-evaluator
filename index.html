@@ -1,15 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auction Evaluator</title>
+
   <style>
-    body { font-family: Arial; margin: 40px; background: #f8f8f8; }
-    .box { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
-    input { width: 100%; padding: 10px; font-size: 1rem; }
-    button { padding: 10px 15px; margin-top: 10px; font-size: 1rem; cursor: pointer; }
-    #result { margin-top: 20px; padding: 15px; background: #eee; border-radius: 6px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 40px;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #result {
+      margin-top: 20px;
+      background: #eee;
+      padding: 15px;
+      border-radius: 6px;
+    }
   </style>
 </head>
 
@@ -18,7 +47,7 @@
     <h1>Auction Evaluator</h1>
     <p>Indsæt et link til en auktion:</p>
 
-    <input id="lotUrl" placeholder="https://example.com/lot123" />
+    <input id="lotUrl" placeholder="https://example.com/lot123">
     <button onclick="analyze()">Analyser</button>
 
     <div id="result"></div>
@@ -34,11 +63,11 @@
         return;
       }
 
-      // SIMPLE VERSION: ingen fetch, ingen scraping
+      // SIMPEL VERSION — ingen scraping, kun vis input
       result.innerHTML = `
         <h3>Analyseret link:</h3>
-        <p><a href="${url}" target="_blank">${url}</a></p>
-        <p>(Her kan du senere tilføje scraping, modeller, osv.)</p>
+        <p>${url}${url}</a></p>
+        <p>(Her kan du senere tilføje vægt, materiale, model osv.)</p>
       `;
     }
   </script>
