@@ -1,81 +1,66 @@
-<script>
-const proxy = "https://thingproxy.freeboard.io/fetch/";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auction Evaluator</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
 
-async function fetchHtml(url) {
-    const res = await fetch(proxy + url);
-    return await res.text(); 
-}
+<body>
+  <header class="header">
+    <div class="logo">
+      <h1>Auction Evaluator</h1>
+      <p class="subtitle">Estimate and analyze auction lots</p>
+    </div>
+  </header>
 
-async function fetchVitusPrices() {
-    const html = await fetchHtml("https://www.vitusguld.dk/kob-salg");
+  <main class="lot-container">
+    <div class="image-section">
+      <img src="assets/sample.jpg" alt="Lot image" class="lot-image" />
+    </div>
 
-    const silverMatch = html.match(/Sølv[^<]*999[^0-9]*([\d.,]+)/i);
-    const goldMatch = html.match(/Guld[^<]*999[^0-9]*([\d.,]+)/i);
+    <div class="info-section">
+      <h2 class="lot-title">Sample Lot Title</h2>
 
-    const fmt = n => parseFloat(n.replace(/\./g, "").replace(",", "."));
+      <div class="estimate-box">
+        <span class="label">Estimate:</span>
+        <span class="estimate-value">€200 – €300</span>
+      </div>
 
-    return {
-        silver999: silverMatch ? fmt(silverMatch[1]) : 0,
-        gold999: goldMatch ? fmt(goldMatch[1]) : 0
-    };
-}
+      <p class="description">
+        This is a placeholder description. Replace this text with your model's
+        extracted data for the auction lot. This layout mimics the visual
+        structure of Interencheres auction pages with clean, readable formatting.
+      </p>
 
-function num(x) {
-    return parseFloat(x.replace(/\./g, "").replace(",", "."));
-}
+      <button class="evaluate-btn">Run Value Model</button>
+    </div>
+  </main>
 
-async function analyze() {
-    const url = document.getElementById("lotUrl").value.trim();
-    const result = document.getElementById("result");
+  <section class="similar-section">
+    <h3>Similar Lots</h3>
 
-    if (!url) {
-        result.innerHTML = "Indsæt et link først.";
-        return;
-    }
+    <div class="similar-grid">
+      <div class="similar-card">
+        <img src="assets/sample.jpg" alt="Similar lot" />
+        <p>Similar lot title</p>
+      </div>
 
-    result.innerHTML = "Henter data...";
+      <div class="similar-card">
+        <img src="assets/sample.jpg" alt="Similar lot" />
+        <p>Another similar lot</p>
+      </div>
 
-    try {
-        const html = await fetchHtml(url);
+      <div class="similar-card">
+        <img src="assets/sample.jpg" alt="Similar lot" />
+        <p>Example similar object</p>
+      </div>
+    </div>
+  </section>
 
-        const title = (html.match(/<h1[^>]*>(.*?)<\/h1>/) || [,"Ukendt titel"])[1];
-        const material = (html.match(/Material[^<]*<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/i) || ["","Unknown"])[1];
-
-        const w = html.match(/Weight[^<]*<\/dt>\s*<dd[^>]*>([\d.,]+)\s*g/i);
-        const weight = w ? num(w[1]) : 0;
-
-        const s = html.match(/Sold for<\/span>\s*([\d.,]+)/i);
-        const sold = s ? num(s[1]) : 0;
-
-        const vitus = await fetchVitusPrices();
-
-        let vitusValue = 0;
-
-        if (material.toLowerCase().includes("silver")) {
-            vitusValue = vitus.silver999 * weight * 0.925;
-        }
-        if (material.toLowerCase().includes("gold")) {
-            vitusValue = vitus.gold999 * weight * 0.999;
-        }
-
-        const profit = vitusValue - sold;
-        const pct = sold > 0 ? (profit / sold) * 100 : 0;
-
-        const cls = profit >= 0 ? "good" : "bad";
-
-        result.className = cls;
-        result.innerHTML = `
-            <h2>${title}</h2>
-            <p><b>Materiale:</b> ${material}</p>
-            <p><b>Vægt:</b> ${weight} g</p>
-            <p><b>Solgt for:</b> ${sold} DKK</p>
-            <p><b>Vitus råværdi:</b> ${vitusValue.toFixed(2)} DKK</p>
-            <hr>
-            <h3>${profit >= 0 ? "✔ God handel" : "✘ Dårlig handel"}</h3>
-            <p><b>Profit:</b> ${profit.toFixed(2)} DKK (${pct.toFixed(1)}%)</p>
-        `;
-    } catch (e) {
-        result.innerHTML = "Fejl: " + e;
-    }
-}
-</script>
+  <footer class="footer">
+    <p>© 2026 Auction Evaluator — GitHub Pages build</p>
+  </footer>
+</body>
+</html>
