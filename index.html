@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Auction Deal Evaluator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    line-height: 1.6;
+  }
+  input, button {
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 10px;
+  }
+  #result {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 6px;
+  }
+  .good { background: #d7ffd7; border: 2px solid #3a9e3a;}
+  .bad  { background: #ffd7d7; border: 2px solid #c03a3a;}
+</style>
+</head>
+<body>
+
+<h1>Auction Deal Evaluator</h1>
+<p>Indsæt et Bruun Rasmussen lot-link:</p>
+
+<input id="lotUrl" type="text" placeholder="https://bruun-rasmussen.dk/..." />
+
+<button onclick="analyze()">Beregn</button>
+
+<div id="result"></div>
+
+<script>
+// Gratis proxy pga. CORS-begrænsning
+const proxy = "https://api.allorigins.win/get?url=";
+
+async function fetchHtml(url) {
+    const response = await fetch(proxy + encodeURIComponent(url));
+    const data = await response.json();
+    return data.contents;
+}
+
+async function fetchVitusPrices() {
+    const html = await fetchHtml("https://www.vitusguld.dk/kob-salg");
+    let gold = 0, silver = 0;
+
+    const goldMatch = html.match(/Guld[^<]*999[^0-9]*([\d.,]+)/i);
+    const silverMatch = html.match(/Sølv[^<]*999[^0-9]*([\d.,]+)/i);
+
+    if (goldMatch) gold = parseFloat(goldMatch[1].replace(/\./g,"").replace(",","."));
+    if (silverMatch) silver = parseFloat(silverMatch[1].replace(/\./g,"").replace(",","."));
+
+    return { gold999: gold, silver999: silver };
+}
+
+function parseNumber(str) {
+    if (!str) return 0;
+    return parseFloat(str.replace(/\./g, "").replace(",", "."));
+}
+
+async function analyze() {
+    const url = document.getElementById("lotUrl").value.trim();
+    const resultDiv = document.getElementById("result");
+
+    if (!url) {
+        resultDiv.innerHTML = "Indsæt et link først.";
+        return;
+    }
+
+    resultDiv.innerHTML = "Henter data...";
+
+    try {
+        // 1) Hent lot HTML
+        const html = await fetchHtml(url);
+
+        // 2) Titel
+        const titleMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/);
+        const title = titleMatch ? titleMatch[1].trim() : "Ukendt titel";
+
+        // 3) Lot ID
+        const lotMatch = html.match(/(\d{3,4}\s*\/\s*\d+)/);
+        const lotId = lotMatch ? lotMatch[1] : "Ukendt";
+
+        // 4) Materiale
+        let material = "Ukendt";
+        const catMatch = html.match(/Kategori[\s\S]*?<[^>]+>([^<]+)/i);
+        if (catMatch) {
+            material = catMatch[1].split("▸")[0].trim();
+        }
+
+        // 5) Vægt
+        const weightMatch = html.match(/([\d.,]+)\s*g/i);
+        const weight = weightMatch ? parseNumber(weightMatch[1]) : 0;
+
+        // 6) Renhed
+        let fineness = 1.0;
+        const finenessMatch = html.match(/\b(585|750|800|830|835|900|925|999)\b/);
+        if (finenessMatch) fineness = parseFloat(finenessMatch[1]) / 1000;
+
+        // 7) Hammerslag
+        const hammerMatch = html.match(/Hammerslag.*?([\d.,]+)\s*DKK/i);
+        const hammer = hammerMatch ? parseNumber(hammerMatch[1]) : 0;
+
+        // 8) Hent Vitus dagspris
+        const vitus = await fetchVitusPrices();
+
+        let vitusValue = 0;
+
+        if (material.toLowerCase().includes("guld"))
+            vitusValue = vitus.gold999 * fineness * weight;
+        else if (material.toLowerCase().includes("sølv"))
+            vitusValue = vitus.silver999 * fineness * weight;
+
+        const profit = vitusValue - hammer;
+        const profitPct = hammer > 0 ? (profit / hammer) * 100 : 0;
+
+        // 9) VIS RESULTAT
+        let cls = profit >= 0 ? "good" : "bad";
+
+        resultDiv.className = cls;
+        resultDiv.innerHTML = `
+            <h2>${title}</h2>
+            <p><b>Lot:</b> ${lotId}</p>
+            <p><b>Materiale:</b> ${material}</p>
+            <p><b>Vægt:</b> ${weight} g</p>
+            <p><b>Renhed:</b> ${fineness}</p>
+            <p><b>Hammerslag:</b> ${hammer} DKK</p>
+            <p><b>Vitus råværdi:</b> ${vitusValue.toFixed(2)} DKK</p>
+            <hr>
+            <h3>${profit >= 0 ? "✔ God handel" : "✘ Dårlig handel"}</h3>
+            <p><b>Profit:</b> ${profit.toFixed(2)} DKK (${profitPct.toFixed(1)}%)</p>
+        `;
+    } catch (e) {
+        resultDiv.innerHTML = "Fejl: " + e;
+    }
+}
+</script>
+
+</body>
+</html>
