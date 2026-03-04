@@ -1,25 +1,22 @@
 <script>
-// Ny og stabil CORS-proxy
-const proxy = "https://corsproxy.io/?";
+const proxy = "https://thingproxy.freeboard.io/fetch/";
 
-// Hent HTML via proxy
 async function fetchHtml(url) {
-    const res = await fetch(proxy + encodeURIComponent(url));
-    return await res.text(); // HTML direkte
+    const res = await fetch(proxy + url);
+    return await res.text(); 
 }
 
-// Hent Vitus guld/sølv-priser
 async function fetchVitusPrices() {
     const html = await fetchHtml("https://www.vitusguld.dk/kob-salg");
 
     const silverMatch = html.match(/Sølv[^<]*999[^0-9]*([\d.,]+)/i);
     const goldMatch = html.match(/Guld[^<]*999[^0-9]*([\d.,]+)/i);
 
-    const format = n => parseFloat(n.replace(/\./g, "").replace(",", "."));
+    const fmt = n => parseFloat(n.replace(/\./g, "").replace(",", "."));
 
     return {
-        silver999: silverMatch ? format(silverMatch[1]) : 0,
-        gold999: goldMatch ? format(goldMatch[1]) : 0
+        silver999: silverMatch ? fmt(silverMatch[1]) : 0,
+        gold999: goldMatch ? fmt(goldMatch[1]) : 0
     };
 }
 
@@ -41,26 +38,20 @@ async function analyze() {
     try {
         const html = await fetchHtml(url);
 
-        // Titel
         const title = (html.match(/<h1[^>]*>(.*?)<\/h1>/) || [,"Ukendt titel"])[1];
-
-        // Materiale
         const material = (html.match(/Material[^<]*<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/i) || ["","Unknown"])[1];
 
-        // Vægt i gram
-        const weightMatch = html.match(/Weight[^<]*<\/dt>\s*<dd[^>]*>([\d.,]+)\s*g/i);
-        const weight = weightMatch ? num(weightMatch[1]) : 0;
+        const w = html.match(/Weight[^<]*<\/dt>\s*<dd[^>]*>([\d.,]+)\s*g/i);
+        const weight = w ? num(w[1]) : 0;
 
-        // Solgt for
-        const soldMatch = html.match(/Sold for<\/span>\s*([\d.,]+)/i);
-        const sold = soldMatch ? num(soldMatch[1]) : 0;
+        const s = html.match(/Sold for<\/span>\s*([\d.,]+)/i);
+        const sold = s ? num(s[1]) : 0;
 
-        // Hent Vitus dagspris
         const vitus = await fetchVitusPrices();
 
         let vitusValue = 0;
 
-        if (material.toLowerCase().includes("sterling") || material.toLowerCase().includes("silver")) {
+        if (material.toLowerCase().includes("silver")) {
             vitusValue = vitus.silver999 * weight * 0.925;
         }
         if (material.toLowerCase().includes("gold")) {
